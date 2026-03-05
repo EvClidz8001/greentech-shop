@@ -1,4 +1,6 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ range(1, 1000) | random }}">
 {% extends "base.html" %}
+
 
 {% block title %}Личный кабинет{% endblock %}
 
@@ -9,44 +11,402 @@
             {{ current_user.username[0]|upper }}
         </div>
         <h2>{{ current_user.username }}</h2>
-        <p>На сайте с {{ current_user.created_at.strftime('%d.%m.%Y') }}</p>
+        <p class="profile-date">На сайте с {{ current_user.created_at.strftime('%d.%m.%Y') if current_user.created_at else 'недавно' }}</p>
     </div>
     
-    <div class="orders-list">
-        <h2>Мои заказы</h2>
+    <div class="profile-stats">
+        <div class="stat-card">
+            <h3>Заказов</h3>
+            <p>{{ orders|length if orders else 0 }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Отзывов</h3>
+            <p>{{ current_user.reviews|length if current_user.reviews else 0 }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>В корзине</h3>
+            <p>{{ current_user.cart|length if current_user.cart else 0 }}</p>
+        </div>
+    </div>
+    
+    <div class="profile-tabs">
+        <button class="tab-btn active" onclick="showTab('orders')">📦 Мои заказы</button>
+        <button class="tab-btn" onclick="showTab('reviews')">✍️ Мои отзывы</button>
+        <button class="tab-btn" onclick="showTab('settings')">⚙️ Настройки</button>
+    </div>
+    
+    <!-- Вкладка с заказами -->
+    <div id="orders-tab" class="tab-content active">
+        <h3>История заказов</h3>
         
         {% if orders %}
             {% for order in orders %}
             <div class="order-card">
                 <div class="order-header">
-                    <span class="order-id">Заказ №{{ order.id }}</span>
+                    <div>
+                        <span class="order-id">Заказ №{{ order.id }}</span>
+                        <span class="order-date">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                    </div>
                     <span class="order-status status-{{ order.status }}">
-                        {% if order.status == 'pending' %}В обработке
-                        {% elif order.status == 'completed' %}Выполнен
+                        {% if order.status == 'pending' %}⏳ В обработке
+                        {% elif order.status == 'completed' %}✅ Выполнен
+                        {% elif order.status == 'cancelled' %}❌ Отменен
                         {% else %}{{ order.status }}
                         {% endif %}
                     </span>
-                    <span>{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
                 </div>
                 
                 <div class="order-items">
                     {% for item in order.items %}
                     <div class="order-item">
-                        <span>{{ item.product.name }} × {{ item.quantity }}</span>
-                        <span>{{ item.price * item.quantity }} ₽</span>
+                        <div class="order-item-info">
+                            <span class="order-item-name">{{ item.product.name }}</span>
+                            <span class="order-item-quantity">× {{ item.quantity }}</span>
+                        </div>
+                        <span class="order-item-price">{{ item.price * item.quantity }} ₽</span>
                     </div>
                     {% endfor %}
                 </div>
                 
-                <div class="order-total">
-                    Итого: {{ order.total_amount }} ₽
+                <div class="order-footer">
+                    <div class="order-total">
+                        <span>Итого:</span>
+                        <strong>{{ order.total_amount }} ₽</strong>
+                    </div>
+                    {% if order.status == 'completed' %}
+                    <button class="btn-review" onclick="location.href='{{ url_for('catalog') }}'">Оставить отзыв</button>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
         {% else %}
-            <p>У вас пока нет заказов</p>
-            <a href="{{ url_for('catalog') }}" class="btn-primary">Перейти в каталог</a>
+            <div class="empty-state">
+                <p>У вас пока нет заказов</p>
+                <a href="{{ url_for('catalog') }}" class="btn-primary">Перейти в каталог</a>
+            </div>
         {% endif %}
     </div>
+    
+    <!-- Вкладка с отзывами -->
+    <div id="reviews-tab" class="tab-content">
+        <h3>Мои отзывы</h3>
+        
+        {% if current_user.reviews %}
+            {% for review in current_user.reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div>
+                        <span class="review-product">{{ review.product.name }}</span>
+                        <span class="review-rating">
+                            {% for i in range(5) %}
+                                {% if i < review.rating %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    <span class="review-date">{{ review.created_at.strftime('%d.%m.%Y') }}</span>
+                </div>
+                <p class="review-comment">{{ review.comment }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p>Вы еще не оставляли отзывов</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Вкладка с настройками -->
+    <div id="settings-tab" class="tab-content">
+        <h3>Настройки профиля</h3>
+        
+        <form class="settings-form" method="POST" action="{{ url_for('profile') }}">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Введите email" value="{{ current_user.email if current_user.email else '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Телефон</label>
+                <input type="tel" id="phone" name="phone" placeholder="Введите телефон" value="{{ current_user.phone if current_user.phone else '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="address">Адрес доставки</label>
+                <textarea id="address" name="address" rows="3" placeholder="Введите адрес">{{ current_user.address if current_user.address else '' }}</textarea>
+            </div>
+            
+            <button type="submit" class="btn-primary">Сохранить изменения</button>
+        </form>
+        
+        <div class="danger-zone">
+            <h4>Опасная зона</h4>
+            <button class="btn-danger" onclick="if(confirm('Вы уверены?')) alert('Функция в разработке')">Удалить аккаунт</button>
+        </div>
+    </div>
 </section>
+
+<style>
+/* Временные стили, если CSS не подгружается */
+.profile-section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    background-color: #1e4a2e;
+    color: white;
+    font-size: 3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-card h3 {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card p {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1e4a2e;
+    margin: 0;
+}
+
+.profile-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #1e4a2e;
+    padding-bottom: 1rem;
+}
+
+.tab-btn {
+    padding: 0.5rem 1.5rem;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    background-color: #f0f7f0;
+}
+
+.tab-btn.active {
+    background-color: #1e4a2e;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.order-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.order-id {
+    font-weight: bold;
+    color: #1e4a2e;
+}
+
+.order-date {
+    color: #999;
+    font-size: 0.9rem;
+    margin-left: 1rem;
+}
+
+.order-status {
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.order-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.order-total {
+    font-size: 1.1rem;
+}
+
+.btn-primary {
+    background-color: #1e4a2e;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background-color: #2e6e3e;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: white;
+    border-radius: 10px;
+}
+
+.review-card {
+    background: white;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    border: 1px solid #eee;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.review-product {
+    font-weight: bold;
+}
+
+.review-rating {
+    color: #ffc107;
+}
+
+.review-date {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.settings-form {
+    max-width: 500px;
+    margin: 2rem 0;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.danger-zone {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    border: 1px solid #dc3545;
+    border-radius: 5px;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+</style>
+
+<script>
+function showTab(tabName) {
+    // Скрыть все вкладки
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Убрать активный класс у всех кнопок
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Показать выбранную вкладку
+    document.getElementById(tabName + '-tab').classList.add('active');
+    
+    // Добавить активный класс нажатой кнопке
+    event.target.classList.add('active');
+}
+</script>
 {% endblock %}
