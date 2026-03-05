@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Админ панель{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+    <h1>Админ панель</h1>
+    
+    <div class="admin-tabs">
+        <button class="tab-btn active" onclick="showTab('stats')">Статистика</button>
+        <button class="tab-btn" onclick="showTab('products')">Товары</button>
+        <button class="tab-btn" onclick="showTab('orders')">Заказы</button>
+        <button class="tab-btn" onclick="showTab('users')">Пользователи</button>
+        <button class="tab-btn" onclick="showTab('donations')">Пожертвования</button>
+    </div>
+    
+    <!-- Статистика -->
+    <div id="stats-tab" class="tab-content active">
+        <h2>Статистика</h2>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Товаров</h3>
+                <p>{{ products|length }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Заказов</h3>
+                <p>{{ orders|length }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Пользователей</h3>
+                <p>{{ users|length }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Пожертвований</h3>
+                <p>{{ donations|length }}</p>
+            </div>
+        </div>
+        
+        <h3>Последние заказы</h3>
+        <table class="orders-table">
+            <tr>
+                <th>№</th>
+                <th>Пользователь</th>
+                <th>Сумма</th>
+                <th>Статус</th>
+                <th>Дата</th>
+            </tr>
+            {% for order in orders[:5] %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.user.username }}</td>
+                <td>{{ order.total_amount }} ₽</td>
+                <td>{{ order.status }}</td>
+                <td>{{ order.created_at.strftime('%d.%m.%Y') }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <!-- Товары -->
+    <div id="products-tab" class="tab-content">
+        <h2>Управление товарами</h2>
+        
+        <h3>Добавить новый товар</h3>
+        <form action="{{ url_for('add_product') }}" method="POST" class="admin-form">
+            <input type="text" name="name" placeholder="Название" required>
+            <input type="number" name="price" placeholder="Цена" step="0.01" required>
+            <textarea name="description" placeholder="Описание" rows="3" required></textarea>
+            <input type="url" name="image_url" placeholder="URL изображения" required>
+            <select name="category">
+                <option value="indicator">Индикатор</option>
+                <option value="watering">Автополив</option>
+                <option value="spray">Спрей</option>
+                <option value="analyzer">Анализатор</option>
+                <option value="light">Лампа</option>
+                <option value="sensor">Датчик</option>
+                <option value="bundle">Набор</option>
+            </select>
+            <label>
+                <input type="checkbox" name="in_stock" checked> В наличии
+            </label>
+            <button type="submit" class="btn-primary">Добавить товар</button>
+        </form>
+        
+        <h3>Существующие товары</h3>
+        {% for product in products %}
+        <div class="product-edit">
+            <form action="{{ url_for('update_product', product_id=product.id) }}" method="POST">
+                <input type="text" name="name" value="{{ product.name }}" required>
+                <input type="number" name="price" value="{{ product.price }}" step="0.01" required>
+                <textarea name="description" rows="2" required>{{ product.description }}</textarea>
+                <input type="url" name="image_url" value="{{ product.image_url }}" required>
+                <select name="category">
+                    <option value="indicator" {% if product.category == 'indicator' %}selected{% endif %}>Индикатор</option>
+                    <option value="watering" {% if product.category == 'watering' %}selected{% endif %}>Автополив</option>
+                    <option value="spray" {% if product.category == 'spray' %}selected{% endif %}>Спрей</option>
+                    <option value="analyzer" {% if product.category == 'analyzer' %}selected{% endif %}>Анализатор</option>
+                    <option value="light" {% if product.category == 'light' %}selected{% endif %}>Лампа</option>
+                    <option value="sensor" {% if product.category == 'sensor' %}selected{% endif %}>Датчик</option>
+                    <option value="bundle" {% if product.category == 'bundle' %}selected{% endif %}>Набор</option>
+                </select>
+                <label>
+                    <input type="checkbox" name="in_stock" {% if product.in_stock %}checked{% endif %}> В наличии
+                </label>
+                <button type="submit" class="btn-primary">Сохранить</button>
+                <a href="{{ url_for('delete_product', product_id=product.id) }}" 
+                   class="btn-remove" onclick="return confirm('Удалить товар?')">Удалить</a>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Заказы -->
+    <div id="orders-tab" class="tab-content">
+        <h2>Заказы</h2>
+        
+        <table class="orders-table">
+            <tr>
+                <th>№ заказа</th>
+                <th>Пользователь</th>
+                <th>Товары</th>
+                <th>Сумма</th>
+                <th>Статус</th>
+                <th>Дата</th>
+            </tr>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.user.username }}</td>
+                <td>
+                    {% for item in order.items %}
+                        {{ item.product.name }} × {{ item.quantity }}<br>
+                    {% endfor %}
+                </td>
+                <td>{{ order.total_amount }} ₽</td>
+                <td>{{ order.status }}</td>
+                <td>{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <!-- Пользователи -->
+    <div id="users-tab" class="tab-content">
+        <h2>Пользователи</h2>
+        
+        <table class="orders-table">
+            <tr>
+                <th>ID</th>
+                <th>Логин</th>
+                <th>Админ</th>
+                <th>Дата регистрации</th>
+                <th>Заказов</th>
+            </tr>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{% if user.is_admin %}✅{% else %}❌{% endif %}</td>
+                <td>{{ user.created_at.strftime('%d.%m.%Y') }}</td>
+                <td>{{ user.orders|length }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <!-- Пожертвования -->
+    <div id="donations-tab" class="tab-content">
+        <h2>Пожертвования</h2>
+        
+        <table class="donations-table">
+            <tr>
+                <th>Дата</th>
+                <th>Пользователь</th>
+                <th>Сумма</th>
+            </tr>
+            {% for donation in donations %}
+            <tr>
+                <td>{{ donation.date.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ donation.user.username if donation.user else 'Аноним' }}</td>
+                <td>{{ donation.amount }} ₽</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</section>
+
+<script>
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabName + '-tab').classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+{% endblock %}

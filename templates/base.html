@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenTech - {% block title %}Умные технологии для растений{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1><i class="fas fa-leaf"></i> GreenTech</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Главная</a></li>
+                <li><a href="{{ url_for('catalog') }}">Каталог</a></li>
+                <li><a href="{{ url_for('about') }}">О нас</a></li>
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('profile') }}">Личный кабинет</a></li>
+                {% endif %}
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                <li><a href="{{ url_for('admin_panel') }}">Админ панель</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        <div class="user-actions">
+            {% if current_user.is_authenticated %}
+                <span class="welcome-text">Привет, {{ current_user.username }}!</span>
+                <a href="{{ url_for('cart') }}" class="cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn">Выйти</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn">Войти</a>
+            {% endif %}
+        </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>🌱 GreenTech — заботимся о ваших растениях с 2024 года</p>
+        <p>Счет клуба защиты природы: <strong>40702810123450000000</strong> (Банк России)</p>
+        <p class="small">Все товары сертифицированы. Имеются научные обоснования.</p>
+    </footer>
+
+    <script>
+    // Обновление счетчика корзины
+    function updateCartCount() {
+        {% if current_user.is_authenticated %}
+        fetch('/api/cart_count')
+            .then(response => response.json())
+            .then(data => {
+                const countSpan = document.getElementById('cart-count');
+                if (data.count > 0) {
+                    countSpan.textContent = data.count;
+                    countSpan.style.display = 'inline';
+                } else {
+                    countSpan.style.display = 'none';
+                }
+            });
+        {% endif %}
+    }
+    
+    // Обновляем счетчик при загрузке страницы
+    document.addEventListener('DOMContentLoaded', updateCartCount);
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

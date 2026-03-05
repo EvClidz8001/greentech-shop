@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<section class="profile-section">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {{ current_user.username[0]|upper }}
+        </div>
+        <h2>{{ current_user.username }}</h2>
+        <p>На сайте с {{ current_user.created_at.strftime('%d.%m.%Y') }}</p>
+    </div>
+    
+    <div class="orders-list">
+        <h2>Мои заказы</h2>
+        
+        {% if orders %}
+            {% for order in orders %}
+            <div class="order-card">
+                <div class="order-header">
+                    <span class="order-id">Заказ №{{ order.id }}</span>
+                    <span class="order-status status-{{ order.status }}">
+                        {% if order.status == 'pending' %}В обработке
+                        {% elif order.status == 'completed' %}Выполнен
+                        {% else %}{{ order.status }}
+                        {% endif %}
+                    </span>
+                    <span>{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                </div>
+                
+                <div class="order-items">
+                    {% for item in order.items %}
+                    <div class="order-item">
+                        <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                        <span>{{ item.price * item.quantity }} ₽</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="order-total">
+                    Итого: {{ order.total_amount }} ₽
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>У вас пока нет заказов</p>
+            <a href="{{ url_for('catalog') }}" class="btn-primary">Перейти в каталог</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

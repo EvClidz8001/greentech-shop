@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог товаров{% endblock %}
+
+{% block content %}
+<section class="catalog-header">
+    <h1>Каталог умных устройств</h1>
+    
+    <div class="catalog-controls">
+        <form class="search-box" method="GET" action="{{ url_for('catalog') }}">
+            <input type="text" name="search" placeholder="Поиск товаров..." value="{{ search }}">
+            <button type="submit"><i class="fas fa-search"></i></button>
+            
+            {% if current_category != 'all' %}
+            <input type="hidden" name="category" value="{{ current_category }}">
+            {% endif %}
+        </form>
+        
+        <select class="sort-select" onchange="window.location.href = this.value">
+            <option value="{{ url_for('catalog', category=current_category, search=search, sort='name') }}" 
+                    {% if current_sort == 'name' %}selected{% endif %}>
+                По названию
+            </option>
+            <option value="{{ url_for('catalog', category=current_category, search=search, sort='price_asc') }}"
+                    {% if current_sort == 'price_asc' %}selected{% endif %}>
+                По возрастанию цены
+            </option>
+            <option value="{{ url_for('catalog', category=current_category, search=search, sort='price_desc') }}"
+                    {% if current_sort == 'price_desc' %}selected{% endif %}>
+                По убыванию цены
+            </option>
+            <option value="{{ url_for('catalog', category=current_category, search=search, sort='rating') }}"
+                    {% if current_sort == 'rating' %}selected{% endif %}>
+                По рейтингу
+            </option>
+        </select>
+    </div>
+    
+    <div class="filters">
+        <a href="{{ url_for('catalog', search=search, sort=current_sort) }}" 
+           class="filter-btn {% if current_category == 'all' or not current_category %}active{% endif %}">
+            Все
+        </a>
+        <a href="{{ url_for('catalog', category='indicator', search=search, sort=current_sort) }}" 
+           class="filter-btn {% if current_category == 'indicator' %}active{% endif %}">
+            Индикаторы
+        </a>
+        <a href="{{ url_for('catalog', category='watering', search=search, sort=current_sort) }}" 
+           class="filter-btn {% if current_category == 'watering' %}active{% endif %}">
+            Автополив
+        </a>
+        <a href="{{ url_for('catalog', category='spray', search=search, sort=current_sort) }}" 
+           class="filter-btn {% if current_category == 'spray' %}active{% endif %}">
+            Спреи
+        </a>
+        <a href="{{ url_for('catalog', category='analyzer', search=search, sort=current_sort) }}" 
+           class="filter-btn {% if current_category == 'analyzer' %}active{% endif %}">
+            Анализаторы
+        </a>
+        <a href="{{ url_for('catalog', category='light', search=search, sort=current_sort) }}" 
+           class="filter-btn {% if current_category == 'light' %}active{% endif %}">
+            Лампы
+        </a>
+        <a href="{{ url_for('catalog', category='bundle', search=search, sort=current_sort) }}" 
+           class="filter-btn {% if current_category == 'bundle' %}active{% endif %}">
+            Наборы
+        </a>
+    </div>
+</section>
+
+<section class="products-section">
+    {% if products %}
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-card">
+            {% if product.is_bundle %}
+            <div class="product-badge">Набор</div>
+            {% elif product.rating >= 4.5 %}
+            <div class="product-badge">Хит</div>
+            {% endif %}
+            <div class="product-image">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+            </div>
+            <div class="product-info">
+                <h3>{{ product.name }}</h3>
+                <div class="product-rating">
+                    {% for i in range(5) %}
+                        {% if i < product.rating|int %}
+                            ★
+                        {% elif product.rating - i > 0.5 %}
+                            ½
+                        {% else %}
+                            ☆
+                        {% endif %}
+                    {% endfor %}
+                    <span>({{ product.reviews|length }})</span>
+                </div>
+                <p class="product-description">{{ product.description[:100] }}...</p>
+                <div class="product-price">{{ product.price }} ₽</div>
+                <div class="product-actions">
+                    {% if current_user.is_authenticated %}
+                        {% if product.in_stock %}
+                        <button onclick="addToCart({{ product.id }})" class="btn-add">В корзину</button>
+                        {% else %}
+                        <button class="btn-add" disabled>Нет в наличии</button>
+                        {% endif %}
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-add">Войдите чтобы купить</a>
+                    {% endif %}
+                    <a href="{{ url_for('product', product_id=product.id) }}" class="btn-details">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-cart">
+        <p>Товары не найдены</p>
+        <a href="{{ url_for('catalog') }}" class="btn-catalog">Сбросить фильтры</a>
+    </div>
+    {% endif %}
+</section>
+
+<script>
+function addToCart(productId) {
+    fetch(`/add_to_cart/${productId}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Обновление счетчика корзины
+            const cartIcon = document.querySelector('.cart-icon');
+            let countSpan = cartIcon.querySelector('.cart-count');
+            
+            if (countSpan) {
+                countSpan.textContent = data.cart_count;
+            } else {
+                countSpan = document.createElement('span');
+                countSpan.className = 'cart-count';
+                countSpan.textContent = data.cart_count;
+                cartIcon.appendChild(countSpan);
+            }
+            
+            alert('Товар добавлен в корзину!');
+        }
+    });
+}
+</script>
+{% endblock %}

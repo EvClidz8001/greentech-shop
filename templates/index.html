@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <h2>🌱 Спасите ваши растения!</h2>
+    <p>Умные технологии для здоровья зелени. Присоединяйтесь к клубу защитников природы.</p>
+    
+    <div class="donation-box">
+        <h3>🌍 Клуб защиты природы</h3>
+        <p>Переведите любую сумму в фонд спасения растений</p>
+        {% if current_user.is_authenticated %}
+        <form action="{{ url_for('donate') }}" method="POST" class="donation-form">
+            <input type="number" name="amount" placeholder="Сумма, ₽" min="10" value="100" required>
+            <button type="submit" class="btn-primary">Отправить</button>
+        </form>
+        {% else %}
+        <p class="login-prompt"><a href="{{ url_for('login') }}" style="color: var(--primary-color);">Войдите</a>, чтобы сделать пожертвование</p>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Баннер акций -->
+<section class="sale-banner">
+    <h3>🎉 Специальное предложение!</h3>
+    <p>При покупке набора "Профессионал" - скидка 30% + бесплатная доставка</p>
+    <a href="{{ url_for('catalog') }}?category=bundle" class="btn-primary">Посмотреть наборы</a>
+</section>
+
+<!-- Популярные товары -->
+<section class="products-section">
+    <h2>🔥 Популярные товары</h2>
+    
+    <div class="product-grid">
+        {% for product in products[:3] %}
+        <div class="product-card">
+            {% if product.rating >= 4.5 %}
+            <div class="product-badge">Хит продаж</div>
+            {% endif %}
+            <div class="product-image">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}">
+            </div>
+            <div class="product-info">
+                <h3>{{ product.name }}</h3>
+                <div class="product-rating">
+                    {% for i in range(5) %}
+                        {% if i < product.rating|int %}
+                            ★
+                        {% elif product.rating - i > 0.5 %}
+                            ½
+                        {% else %}
+                            ☆
+                        {% endif %}
+                    {% endfor %}
+                    <span>({{ product.reviews|length }} отзывов)</span>
+                </div>
+                <p class="product-description">{{ product.description[:100] }}...</p>
+                <div class="product-price">{{ product.price }} ₽</div>
+                <div class="product-actions">
+                    {% if current_user.is_authenticated %}
+                        {% if product.in_stock %}
+                        <button onclick="addToCart({{ product.id }})" class="btn-add">В корзину</button>
+                        {% else %}
+                        <button class="btn-add" disabled>Нет в наличии</button>
+                        {% endif %}
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-add">Войдите чтобы купить</a>
+                    {% endif %}
+                    <a href="{{ url_for('product', product_id=product.id) }}" class="btn-details">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="center">
+        <a href="{{ url_for('catalog') }}" class="btn-catalog">Смотреть все товары</a>
+    </div>
+</section>
+
+<!-- Наборы товаров -->
+<section class="products-section">
+    <h2>🎁 Готовые наборы</h2>
+    
+    <div class="product-grid">
+        {% for bundle in bundles %}
+        <div class="product-card">
+            <div class="product-badge">Экономия 20%</div>
+            <div class="product-image">
+                <img src="{{ bundle.image_url }}" alt="{{ bundle.name }}">
+            </div>
+            <div class="product-info">
+                <h3>{{ bundle.name }}</h3>
+                <div class="product-rating">
+                    {% for i in range(5) %}
+                        {% if i < bundle.rating|int %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                    <span>({{ bundle.reviews|length }} отзывов)</span>
+                </div>
+                <p class="product-description">{{ bundle.description[:100] }}...</p>
+                <div class="product-price">{{ bundle.price }} ₽</div>
+                <div class="product-actions">
+                    {% if current_user.is_authenticated %}
+                        {% if bundle.in_stock %}
+                        <button onclick="addToCart({{ bundle.id }})" class="btn-add">В корзину</button>
+                        {% else %}
+                        <button class="btn-add" disabled>Нет в наличии</button>
+                        {% endif %}
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-add">Войдите чтобы купить</a>
+                    {% endif %}
+                    <a href="{{ url_for('product', product_id=bundle.id) }}" class="btn-details">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<script>
+function addToCart(productId) {
+    fetch(`/add_to_cart/${productId}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Обновление счетчика корзины
+            const cartIcon = document.querySelector('.cart-icon');
+            let countSpan = cartIcon.querySelector('.cart-count');
+            
+            if (countSpan) {
+                countSpan.textContent = data.cart_count;
+            } else {
+                countSpan = document.createElement('span');
+                countSpan.className = 'cart-count';
+                countSpan.textContent = data.cart_count;
+                cartIcon.appendChild(countSpan);
+            }
+            
+            // Показ уведомления
+            alert('Товар добавлен в корзину!');
+        }
+    });
+}
+</script>
+{% endblock %}

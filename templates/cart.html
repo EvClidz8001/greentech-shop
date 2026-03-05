@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+<section class="cart-section">
+    <h1>Корзина</h1>
+    
+    {% if cart_items %}
+    <div class="cart-container">
+        <div class="cart-items">
+            {% for item in cart_items %}
+            <div class="cart-item">
+                <div class="cart-item-image">
+                    <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}">
+                </div>
+                <div class="cart-item-info">
+                    <h3>{{ item.product.name }}</h3>
+                    <p class="cart-item-price">{{ item.product.price }} ₽ × {{ item.quantity }}</p>
+                </div>
+                <div class="cart-item-actions">
+                    <form action="{{ url_for('update_cart', item_id=item.id) }}" method="POST" class="quantity-form">
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="10">
+                        <button type="submit">Обновить</button>
+                    </form>
+                    <a href="{{ url_for('remove_from_cart', item_id=item.id) }}" class="btn-remove" onclick="return confirm('Удалить товар из корзины?')">Удалить</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="cart-summary">
+            <h3>Ваш заказ</h3>
+            <div class="summary-item">
+                <span>Товары ({{ cart_items|length }})</span>
+                <span>{{ total }} ₽</span>
+            </div>
+            <div class="summary-item">
+                <span>Доставка</span>
+                <span>Бесплатно</span>
+            </div>
+            <div class="summary-total">
+                <strong>Итого:</strong>
+                <strong>{{ total }} ₽</strong>
+            </div>
+            <form action="{{ url_for('checkout') }}" method="POST">
+                <button type="submit" class="btn-checkout">Оформить заказ</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-cart">
+        <p>Ваша корзина пуста</p>
+        <a href="{{ url_for('catalog') }}" class="btn-catalog">Перейти в каталог</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

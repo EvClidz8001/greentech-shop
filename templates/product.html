@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<section class="product-detail">
+    <div class="product-detail-container">
+        <div class="product-detail-image">
+            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        </div>
+        
+        <div class="product-detail-info">
+            <h1>{{ product.name }}</h1>
+            
+            <div class="product-detail-rating">
+                <span class="stars">
+                    {% for i in range(5) %}
+                        {% if i < product.rating|int %}
+                            ★
+                        {% elif product.rating - i > 0.5 %}
+                            ½
+                        {% else %}
+                            ☆
+                        {% endif %}
+                    {% endfor %}
+                </span>
+                <span>{{ product.rating }} ({{ product.reviews|length }} отзывов)</span>
+            </div>
+            
+            <div class="product-detail-price">{{ product.price }} ₽</div>
+            
+            <div class="product-detail-description">
+                <p>{{ product.description }}</p>
+            </div>
+            
+            {% if product.is_bundle and bundle_items %}
+            <div class="bundle-items">
+                <h3>Состав набора:</h3>
+                <ul>
+                    {% for item in bundle_items %}
+                    <li>
+                        <span class="emoji">🔹</span>
+                        {{ item.quantity }} x {{ item.product.name }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <div class="product-detail-actions">
+                {% if current_user.is_authenticated %}
+                    {% if product.in_stock %}
+                    <button onclick="addToCart({{ product.id }})" class="btn-add-large">Добавить в корзину</button>
+                    {% else %}
+                    <button class="btn-add-large" disabled>Нет в наличии</button>
+                    {% endif %}
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn-add-large">Войдите чтобы купить</a>
+                {% endif %}
+            </div>
+            
+            <div class="product-scientific">
+                <h4>🔬 Научное обоснование:</h4>
+                <p>Данный продукт прошел испытания в лабораториях и рекомендован к использованию. Методы основаны на исследованиях в области агрономии и биофизики.</p>
+                <p>📚 Источник: "Здоровье почвы" (изд. 2023, стр. 45)</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Отзывы -->
+    <div class="reviews-section">
+        <h2>Отзывы покупателей</h2>
+        
+        {% if current_user.is_authenticated %}
+        <div class="review-form">
+            <h3>Оставить отзыв</h3>
+            <form action="{{ url_for('add_review', product_id=product.id) }}" method="POST">
+                <div class="rating-select">
+                    <span onclick="setRating(1)">☆</span>
+                    <span onclick="setRating(2)">☆</span>
+                    <span onclick="setRating(3)">☆</span>
+                    <span onclick="setRating(4)">☆</span>
+                    <span onclick="setRating(5)">☆</span>
+                </div>
+                <input type="hidden" name="rating" id="rating" value="5">
+                <textarea name="comment" placeholder="Ваш отзыв..." rows="3" required></textarea>
+                <button type="submit" class="btn-primary">Отправить отзыв</button>
+            </form>
+        </div>
+        {% endif %}
+        
+        {% if reviews %}
+            {% for review in reviews %}
+            <div class="review-item">
+                <div class="review-header">
+                    <span class="review-user">{{ review.user.username }}</span>
+                    <span class="review-rating">
+                        {% for i in range(5) %}
+                            {% if i < review.rating %}★{% else %}☆{% endif %}
+                        {% endfor %}
+                    </span>
+                    <span class="review-date">{{ review.created_at.strftime('%d.%m.%Y') }}</span>
+                </div>
+                <div class="review-comment">{{ review.comment }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>Пока нет отзывов. Будьте первым!</p>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+function setRating(rating) {
+    document.getElementById('rating').value = rating;
+    const stars = document.querySelectorAll('.rating-select span');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.textContent = '★';
+        } else {
+            star.textContent = '☆';
+        }
+    });
+}
+
+function addToCart(productId) {
+    fetch(`/add_to_cart/${productId}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const cartIcon = document.querySelector('.cart-icon');
+            let countSpan = cartIcon.querySelector('.cart-count');
+            
+            if (countSpan) {
+                countSpan.textContent = data.cart_count;
+            } else {
+                countSpan = document.createElement('span');
+                countSpan.className = 'cart-count';
+                countSpan.textContent = data.cart_count;
+                cartIcon.appendChild(countSpan);
+            }
+            
+            alert('Товар добавлен в корзину!');
+        }
+    });
+}
+
+// Установка начального рейтинга
+setRating(5);
+</script>
+{% endblock %}

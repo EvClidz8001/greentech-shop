@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-container">
+        <h2>Вход в систему</h2>
+        
+        <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+            <div class="form-group">
+                <label for="username">Логин:</label>
+                <input type="text" id="username" name="username" required placeholder="Введите логин">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required placeholder="Введите пароль">
+            </div>
+            
+            <button type="submit" class="btn-auth">Войти</button>
+        </form>
+        
+        <div class="auth-info">
+            <p><strong>Тестовые данные:</strong></p>
+            <p>Админ: admin / admin123</p>
+            <p>Пользователь: user / user123</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
