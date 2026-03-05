@@ -1,0 +1,14 @@
+# Создай .gitignore
+@"
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+.DS_Store
+.env
+.vscode/
+.idea/
+"@ | Out-File -FilePath .gitignore -Encoding utf8
