@@ -19,6 +19,10 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# ВРЕМЕННО! Удаляет старую базу для создания новой с правильными URL
+if os.path.exists('greentech.db'):
+    os.remove('greentech.db')
+
 # Создание базы данных и добавление начальных данных
 with app.app_context():
     db.create_all()
@@ -187,7 +191,6 @@ def add_review(product_id):
     review = Review(user_id=current_user.id, product_id=product_id, rating=rating, comment=comment)
     db.session.add(review)
     
-    # Обновление рейтинга товара
     product = Product.query.get(product_id)
     reviews = Review.query.filter_by(product_id=product_id).all()
     avg_rating = sum(r.rating for r in reviews) / len(reviews)
@@ -243,7 +246,6 @@ def add_to_cart(product_id):
     
     db.session.commit()
     
-    # Подсчет количества товаров в корзине
     cart_count = CartItem.query.filter_by(user_id=current_user.id).count()
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
