@@ -21,119 +21,111 @@ def load_user(user_id):
 
 # Создание базы данных и добавление начальных данных
 with app.app_context():
+    db.drop_all()
     db.create_all()
     
-    # Добавление товаров если их нет
-    if Product.query.count() == 0:
-        products = [
-            # Отдельные товары
-            Product(name="Индикатор почвы «Бумажка»", price=150, 
-                   description="Просто вставьте в землю. Если бумажка стала красной — почва закислена (метод: добавьте золу). Желтая — не хватает азота (решение: удобрение крапивой). Метод описан в труде 'Здоровье почвы' (изд. 2023, стр. 45).", 
-                   image_url="https://avatars.mds.yandex.net/get-mpic/11558729/2a0000019cf288dd5ab1924eca51604cdb03/orig",
-                   category="indicator", rating=4.5, in_stock=True),
-            
-            Product(name="Умный полив «AquaBot Pro»", price=1490, 
-                   description="Вставляется в грунт. Полив активируется через мобильное приложение. Таймер от 1 минуты до 24 часов. Присылает push-уведомление, если влажность почвы ниже 20%. Совместим с iOS/Android.", 
-                   image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSgMx0M8p3HV5J3qC3wRYxMpq-rHNt7khMwA&s",
-                   category="watering", rating=4.8, in_stock=True),
-            
-            Product(name="Спрей «Био-Щит»", price=290, 
-                   description="Натуральный состав против паутинного клеща и тли. Экстракт пиретрума и масло нима (проверено в лаборатории защиты растений РАН).", 
-                   image_url="https://www.ttshop.ru/image/cache/catalog/productsImages/33459_1_LRG-300x300.jpg",
-                   category="spray", rating=4.3, in_stock=True),
-            
-            Product(name="Корневой анализатор «RootScan»", price=1990, 
-                   description="Устанавливается на дно горшка. Анализирует состояние корневой системы. Если корням холодно — датчик показывает синий (нужно повысить температуру), если мало света — оранжевый.", 
-                   image_url="https://www.astrasad.ru/img/work/nomencl/35018.jpeg",
-                   category="analyzer", rating=4.6, in_stock=True),
-            
-            Product(name="UV-лампа «Фотосинтез-660»", price=2990, 
-                   description="Ультрафиолетовая лампа полного спектра с пиком 660 нм для ускорения фотосинтеза. Встроенный таймер 12/16 часов.", 
-                   image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGXWN0flIHd4toX2Fi8H98ZOSsQ6k4CMbktQ&s",
-                   category="light", rating=4.7, in_stock=True),
-            
-            Product(name="Датчик влажности «Drop Sensor»", price=890, 
-                   description="Анализирует состав влаги и минералов. Передает данные на смартфон через Bluetooth. Предупреждает о засухе за 24 часа.", 
-                   image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStUx6kmlEMzjLFwxZNdPHMihZmDbqeu3lJBw&s",
-                   category="sensor", rating=4.4, in_stock=True),
-            
-            # Наборы
-            Product(name="🌱 Набор «Начинающий садовод»", price=1990, 
-                   description="Идеальный старт для тех, кто хочет научиться ухаживать за растениями профессионально. Включает: индикатор почвы, спрей Био-Щит, датчик влажности.", 
-                   image_url="https://basket-25.wbbasket.ru/vol4365/part436576/436576856/images/c516x688/1.webp",
-                   category="bundle", rating=4.9, in_stock=True, is_bundle=True),
-            
-            Product(name="🏡 Набор «Домашняя метеостанция»", price=3990, 
-                   description="Полный контроль микроклимата ваших растений. Включает: умный полив, датчик влажности, UV-лампу, корневой анализатор.", 
-                   image_url="https://basket-20.wbbasket.ru/vol3466/part346638/346638449/images/c516x688/1.webp",
-                   category="bundle", rating=5.0, in_stock=True, is_bundle=True),
-            
-            Product(name="🔬 Набор «Профессионал»", price=6990, 
-                   description="Все устройства GreenTech в одном наборе для профессионального ухода за коллекцией растений. Экономия 30%.", 
-                   image_url="https://basket-10.wbbasket.ru/vol1591/part159194/159194132/images/c246x328/1.webp",
-                   category="bundle", rating=5.0, in_stock=True, is_bundle=True)
-        ]
-        db.session.add_all(products)
-        db.session.commit()
+    products = [
+        # Отдельные товары
+        Product(name="Индикатор почвы «Бумажка»", price=150, 
+               description="Просто вставьте в землю. Если бумажка стала красной — почва закислена (метод: добавьте золу). Желтая — не хватает азота (решение: удобрение крапивой). Метод описан в труде 'Здоровье почвы' (изд. 2023, стр. 45).", 
+               image_url="https://avatars.mds.yandex.net/get-mpic/11558729/2a0000019cf288dd5ab1924eca51604cdb03/orig",
+               category="indicator", rating=4.5, in_stock=True),
         
-        # Добавление состава наборов
-        bundle1 = Product.query.filter_by(name="🌱 Набор «Начинающий садовод»").first()
-        bundle2 = Product.query.filter_by(name="🏡 Набор «Домашняя метеостанция»").first()
-        bundle3 = Product.query.filter_by(name="🔬 Набор «Профессионал»").first()
+        Product(name="Умный полив «AquaBot Pro»", price=1490, 
+               description="Вставляется в грунт. Полив активируется через мобильное приложение. Таймер от 1 минуты до 24 часов. Присылает push-уведомление, если влажность почвы ниже 20%. Совместим с iOS/Android.", 
+               image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSgMx0M8p3HV5J3qC3wRYxMpq-rHNt7khMwA&s",
+               category="watering", rating=4.8, in_stock=True),
         
-        products_dict = {p.name: p for p in Product.query.all()}
+        Product(name="Спрей «Био-Щит»", price=290, 
+               description="Натуральный состав против паутинного клеща и тли. Экстракт пиретрума и масло нима (проверено в лаборатории защиты растений РАН).", 
+               image_url="https://www.ttshop.ru/image/cache/catalog/productsImages/33459_1_LRG-300x300.jpg",
+               category="spray", rating=4.3, in_stock=True),
         
-        bundle_items = [
-            BundleItem(bundle_id=bundle1.id, product_id=products_dict["Индикатор почвы «Бумажка»"].id),
-            BundleItem(bundle_id=bundle1.id, product_id=products_dict["Спрей «Био-Щит»"].id),
-            BundleItem(bundle_id=bundle1.id, product_id=products_dict["Датчик влажности «Drop Sensor»"].id),
-            
-            BundleItem(bundle_id=bundle2.id, product_id=products_dict["Умный полив «AquaBot Pro»"].id),
-            BundleItem(bundle_id=bundle2.id, product_id=products_dict["Датчик влажности «Drop Sensor»"].id),
-            BundleItem(bundle_id=bundle2.id, product_id=products_dict["UV-лампа «Фотосинтез-660»"].id),
-            BundleItem(bundle_id=bundle2.id, product_id=products_dict["Корневой анализатор «RootScan»"].id),
-            
-            BundleItem(bundle_id=bundle3.id, product_id=products_dict["Индикатор почвы «Бумажка»"].id),
-            BundleItem(bundle_id=bundle3.id, product_id=products_dict["Спрей «Био-Щит»"].id),
-            BundleItem(bundle_id=bundle3.id, product_id=products_dict["Датчик влажности «Drop Sensor»"].id),
-            BundleItem(bundle_id=bundle3.id, product_id=products_dict["Умный полив «AquaBot Pro»"].id),
-            BundleItem(bundle_id=bundle3.id, product_id=products_dict["UV-лампа «Фотосинтез-660»"].id),
-            BundleItem(bundle_id=bundle3.id, product_id=products_dict["Корневой анализатор «RootScan»"].id),
-        ]
-        db.session.add_all(bundle_items)
-        db.session.commit()
+        Product(name="Корневой анализатор «RootScan»", price=1990, 
+               description="Устанавливается на дно горшка. Анализирует состояние корневой системы. Если корням холодно — датчик показывает синий (нужно повысить температуру), если мало света — оранжевый.", 
+               image_url="https://www.astrasad.ru/img/work/nomencl/35018.jpeg",
+               category="analyzer", rating=4.6, in_stock=True),
+        
+        Product(name="UV-лампа «Фотосинтез-660»", price=2990, 
+               description="Ультрафиолетовая лампа полного спектра с пиком 660 нм для ускорения фотосинтеза. Встроенный таймер 12/16 часов.", 
+               image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGXWN0flIHd4toX2Fi8H98ZOSsQ6k4CMbktQ&s",
+               category="light", rating=4.7, in_stock=True),
+        
+        Product(name="Датчик влажности «Drop Sensor»", price=890, 
+               description="Анализирует состав влаги и минералов. Передает данные на смартфон через Bluetooth. Предупреждает о засухе за 24 часа.", 
+               image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStUx6kmlEMzjLFwxZNdPHMihZmDbqeu3lJBw&s",
+               category="sensor", rating=4.4, in_stock=True),
+        
+        # Наборы
+        Product(name="🌱 Набор «Начинающий садовод»", price=1990, 
+               description="Идеальный старт для тех, кто хочет научиться ухаживать за растениями профессионально. Включает: индикатор почвы, спрей Био-Щит, датчик влажности.", 
+               image_url="https://basket-25.wbbasket.ru/vol4365/part436576/436576856/images/c516x688/1.webp",
+               category="bundle", rating=4.9, in_stock=True, is_bundle=True),
+        
+        Product(name="🏡 Набор «Домашняя метеостанция»", price=3990, 
+               description="Полный контроль микроклимата ваших растений. Включает: умный полив, датчик влажности, UV-лампу, корневой анализатор.", 
+               image_url="https://basket-20.wbbasket.ru/vol3466/part346638/346638449/images/c516x688/1.webp",
+               category="bundle", rating=5.0, in_stock=True, is_bundle=True),
+        
+        Product(name="🔬 Набор «Профессионал»", price=6990, 
+               description="Все устройства GreenTech в одном наборе для профессионального ухода за коллекцией растений. Экономия 30%.", 
+               image_url="https://basket-10.wbbasket.ru/vol1591/part159194/159194132/images/c246x328/1.webp",
+               category="bundle", rating=5.0, in_stock=True, is_bundle=True)
+    ]
+    db.session.add_all(products)
+    db.session.commit()
+    
+    # Добавление состава наборов
+    bundle1 = Product.query.filter_by(name="🌱 Набор «Начинающий садовод»").first()
+    bundle2 = Product.query.filter_by(name="🏡 Набор «Домашняя метеостанция»").first()
+    bundle3 = Product.query.filter_by(name="🔬 Набор «Профессионал»").first()
+    
+    products_dict = {p.name: p for p in Product.query.all()}
+    
+    bundle_items = [
+        BundleItem(bundle_id=bundle1.id, product_id=products_dict["Индикатор почвы «Бумажка»"].id),
+        BundleItem(bundle_id=bundle1.id, product_id=products_dict["Спрей «Био-Щит»"].id),
+        BundleItem(bundle_id=bundle1.id, product_id=products_dict["Датчик влажности «Drop Sensor»"].id),
+        
+        BundleItem(bundle_id=bundle2.id, product_id=products_dict["Умный полив «AquaBot Pro»"].id),
+        BundleItem(bundle_id=bundle2.id, product_id=products_dict["Датчик влажности «Drop Sensor»"].id),
+        BundleItem(bundle_id=bundle2.id, product_id=products_dict["UV-лампа «Фотосинтез-660»"].id),
+        BundleItem(bundle_id=bundle2.id, product_id=products_dict["Корневой анализатор «RootScan»"].id),
+        
+        BundleItem(bundle_id=bundle3.id, product_id=products_dict["Индикатор почвы «Бумажка»"].id),
+        BundleItem(bundle_id=bundle3.id, product_id=products_dict["Спрей «Био-Щит»"].id),
+        BundleItem(bundle_id=bundle3.id, product_id=products_dict["Датчик влажности «Drop Sensor»"].id),
+        BundleItem(bundle_id=bundle3.id, product_id=products_dict["Умный полив «AquaBot Pro»"].id),
+        BundleItem(bundle_id=bundle3.id, product_id=products_dict["UV-лампа «Фотосинтез-660»"].id),
+        BundleItem(bundle_id=bundle3.id, product_id=products_dict["Корневой анализатор «RootScan»"].id),
+    ]
+    db.session.add_all(bundle_items)
+    db.session.commit()
     
     # Добавление администратора
-    if User.query.filter_by(username='admin').first() is None:
-        admin = User(username='admin', 
-                    password=generate_password_hash('admin123'), 
-                    is_admin=True)
-        db.session.add(admin)
-        db.session.commit()
+    admin = User(username='admin', 
+                password=generate_password_hash('admin123'), 
+                is_admin=True)
+    db.session.add(admin)
     
     # Добавление тестового пользователя
-    if User.query.filter_by(username='user').first() is None:
-        user = User(username='user', 
-                   password=generate_password_hash('user123'), 
-                   is_admin=False)
-        db.session.add(user)
-        db.session.commit()
+    user = User(username='user', 
+               password=generate_password_hash('user123'), 
+               is_admin=False)
+    db.session.add(user)
+    db.session.commit()
     
     # Добавление отзывов
-    if Review.query.count() == 0:
-        user = User.query.filter_by(username='user').first()
-        products = Product.query.all()
-        
-        reviews = [
-            Review(user_id=user.id, product_id=products[0].id, rating=5, 
-                  comment="Отличный индикатор! Очень точно показывает состояние почвы."),
-            Review(user_id=user.id, product_id=products[1].id, rating=4, 
-                  comment="Удобный полив, но приложение иногда тормозит."),
-            Review(user_id=user.id, product_id=products[6].id, rating=5, 
-                  comment="Набор супер! Все необходимое для начинающего."),
-        ]
-        db.session.add_all(reviews)
-        db.session.commit()
+    reviews = [
+        Review(user_id=user.id, product_id=products[0].id, rating=5, 
+              comment="Отличный индикатор! Очень точно показывает состояние почвы."),
+        Review(user_id=user.id, product_id=products[1].id, rating=4, 
+              comment="Удобный полив, но приложение иногда тормозит."),
+        Review(user_id=user.id, product_id=products[6].id, rating=5, 
+              comment="Набор супер! Все необходимое для начинающего."),
+    ]
+    db.session.add_all(reviews)
+    db.session.commit()
 
 @app.route('/')
 def index():
