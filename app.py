@@ -28,48 +28,48 @@ with app.app_context():
         # Отдельные товары
         Product(name="Индикатор почвы «Бумажка»", price=150, 
                description="Просто вставьте в землю. Если бумажка стала красной — почва закислена (метод: добавьте золу). Желтая — не хватает азота (решение: удобрение крапивой). Метод описан в труде 'Здоровье почвы' (изд. 2023, стр. 45).", 
-               image_url="https://avatars.mds.yandex.net/get-mpic/11558729/2a0000019cf288dd5ab1924eca51604cdb03/orig",
+               image_url="https://giga.chat/gigachat/files/public/generated/989cb791-4166-4a50-9bcd-d48c59dd68b2",
                category="indicator", rating=4.5, in_stock=True),
         
         Product(name="Умный полив «AquaBot Pro»", price=1490, 
                description="Вставляется в грунт. Полив активируется через мобильное приложение. Таймер от 1 минуты до 24 часов. Присылает push-уведомление, если влажность почвы ниже 20%. Совместим с iOS/Android.", 
-               image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSgMx0M8p3HV5J3qC3wRYxMpq-rHNt7khMwA&s",
+               image_url="https://giga.chat/gigachat/files/public/generated/2978a340-066b-4000-8417-a3aab5b74094",
                category="watering", rating=4.8, in_stock=True),
         
         Product(name="Спрей «Био-Щит»", price=290, 
                description="Натуральный состав против паутинного клеща и тли. Экстракт пиретрума и масло нима (проверено в лаборатории защиты растений РАН).", 
-               image_url="https://www.ttshop.ru/image/cache/catalog/productsImages/33459_1_LRG-300x300.jpg",
+               image_url="https://giga.chat/gigachat/files/public/generated/dbb845a8-5b01-4230-a77d-924bd18ff76c",
                category="spray", rating=4.3, in_stock=True),
         
         Product(name="Корневой анализатор «RootScan»", price=1990, 
                description="Устанавливается на дно горшка. Анализирует состояние корневой системы. Если корням холодно — датчик показывает синий (нужно повысить температуру), если мало света — оранжевый.", 
-               image_url="https://www.astrasad.ru/img/work/nomencl/35018.jpeg",
+               image_url="https://giga.chat/gigachat/files/public/generated/57f54d00-1ba3-432c-9d8b-3aa570e5788e",
                category="analyzer", rating=4.6, in_stock=True),
         
         Product(name="UV-лампа «Фотосинтез-660»", price=2990, 
                description="Ультрафиолетовая лампа полного спектра с пиком 660 нм для ускорения фотосинтеза. Встроенный таймер 12/16 часов.", 
-               image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGXWN0flIHd4toX2Fi8H98ZOSsQ6k4CMbktQ&s",
+               image_url="https://giga.chat/gigachat/files/public/generated/5fe216fc-9bab-47e9-82d6-8a409a52c10e",
                category="light", rating=4.7, in_stock=True),
         
         Product(name="Датчик влажности «Drop Sensor»", price=890, 
                description="Анализирует состав влаги и минералов. Передает данные на смартфон через Bluetooth. Предупреждает о засухе за 24 часа.", 
-               image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStUx6kmlEMzjLFwxZNdPHMihZmDbqeu3lJBw&s",
+               image_url="https://giga.chat/gigachat/files/public/generated/4c7a36d2-25b0-4ee6-939b-36d9356eb9da",
                category="sensor", rating=4.4, in_stock=True),
         
         # Наборы
         Product(name="🌱 Набор «Начинающий садовод»", price=1990, 
                description="Идеальный старт для тех, кто хочет научиться ухаживать за растениями профессионально. Включает: индикатор почвы, спрей Био-Щит, датчик влажности.", 
-               image_url="https://basket-25.wbbasket.ru/vol4365/part436576/436576856/images/c516x688/1.webp",
+               image_url="https://giga.chat/gigachat/files/public/generated/aed1af1a-b6bc-4fcb-a3e4-2e07da954749",
                category="bundle", rating=4.9, in_stock=True, is_bundle=True),
         
         Product(name="🏡 Набор «Домашняя метеостанция»", price=3990, 
                description="Полный контроль микроклимата ваших растений. Включает: умный полив, датчик влажности, UV-лампу, корневой анализатор.", 
-               image_url="https://basket-20.wbbasket.ru/vol3466/part346638/346638449/images/c516x688/1.webp",
+               image_url="https://giga.chat/gigachat/files/public/generated/e5688028-dac2-437f-a0b2-ce6417f448e3",
                category="bundle", rating=5.0, in_stock=True, is_bundle=True),
         
         Product(name="🔬 Набор «Профессионал»", price=6990, 
                description="Все устройства GreenTech в одном наборе для профессионального ухода за коллекцией растений. Экономия 30%.", 
-               image_url="https://basket-10.wbbasket.ru/vol1591/part159194/159194132/images/c246x328/1.webp",
+               image_url="https://giga.chat/gigachat/files/public/generated/ad1716b3-a097-418a-8d64-51d0da8c14cd",
                category="bundle", rating=5.0, in_stock=True, is_bundle=True)
     ]
     db.session.add_all(products)
